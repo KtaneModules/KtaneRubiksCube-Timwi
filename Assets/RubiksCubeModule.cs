@@ -229,8 +229,17 @@ public class RubiksCubeModule : MonoBehaviour
                     if (x != 1 || y != 1 || z != 1)
                         _cubeletsSolved[x, y, z] = _cubelets[x, y, z].Cubelet;
 
+        var hasActivated = false;
         Module.OnActivate += delegate
         {
+            // There’s a bug with the factory room in sequence mode that can cause OnActivate to be called multiple times.
+            // Since this lambda calls `PerformInitialRotations` which in turn starts the coroutine `PerformMoves`, multiple
+            // rotations would be executed at the same time, causing the cubelets to contort and making the module unsolvable.
+            // Therefore, make sure that the code in OnActivate only runs once.
+            if (hasActivated)
+                return;
+            hasActivated = true;
+
             var pusherMoveInfos = @"
                 B  = F002 C002 E311 B311 
                 B’ = B111 E111 C022 F022 
